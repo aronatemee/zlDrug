@@ -1,4 +1,4 @@
-
+--更改之后的 新·药袋
 /* 
 药袋，使用SQL来编写：
 时点对照表已完成，
@@ -49,27 +49,38 @@ select distinct i.规格, a.库房id, a.药品id, a.医嘱id, e.出院病床 as 床号, e.病人
   , RTRIM(to_char(b.单次用量/d.剂量系数,'fm990.99999'), '.')||d.住院单位 as 用量,a.用法
   , c.首次时间 as 日期, b.执行频次, b.频率次数, b.首日数次, f.名称 as 科室, b.姓名||decode(b.婴儿,0,'','【婴】') as 姓名, a.年龄, e.住院号, b.医生嘱托, b.开始执行时间
   , datesplit.要求日期 as 护士实际一次发送哪几天
-  from 药品收发记录 a,病人医嘱记录 b ,药品规格 d,病案主页 e,部门表 f,病人医嘱发送 c, 收费项目目录 g, 收费项目别名 h, 药品目录 i
-  , (select distinct to_char(c.要求时间, 'yyyy-mm-dd') as 要求日期, c.医嘱id, e.发送号 from 医嘱执行时间 c
-  join (select a.相关id, b.发送号 from 病人医嘱记录 a
-  join 病人医嘱发送 b on a.id = b.医嘱id
-  where (b.no, b.医嘱id) in
- (select no, Order_Id from
+  from 药品收发记录 a,病人医嘱记录 b ,药品规格 d,病案主页 e,部门表 f,病人医嘱发送 c,病人医嘱发送 c2, 收费项目目录 g, 收费项目别名 h, 药品目录 i
+  , (select distinct to_char(yzzxsj.要求时间, 'yyyy-mm-dd') as 要求日期, yzzxsj.医嘱id, yzzxsj.发送号 
+from 医嘱执行时间 yzzxsj
+where (yzzxsj.医嘱id, yzzxsj.发送号) in (
+select a.id as 给药途径医嘱id, b.发送号 as 给药途径发送号 
+from 病人医嘱记录 a 
+join 病人医嘱发送 b on a.id = b.医嘱id
+where (a.id, b.发送时间) in (
+select 给药途径医嘱id, 药品发送时间 from 
+(
+select a.id as 药品医嘱id, a.相关id as 给药途径医嘱id, b.发送号 as 药品医嘱发送号, b.发送时间 as 药品发送时间 
+from 病人医嘱记录 a
+join 病人医嘱发送 b on a.id = b.医嘱id
+where (b.no, b.医嘱id) in  
+(select no, Order_Id from
   json_table({:CS},'$'columns (nested path '$[*]' columns(no varchar2(20) path '$.Rcp_No', pid number path '$.Pati_Id', Storehouse_Id number path '$.Storehouse_Id',Order_Id number path '$.Order_Id'))) )
-) e on c.医嘱id = e.相关id and c.发送号 = e.发送号
-  order by to_char(c.要求时间, 'yyyy-mm-dd')) datesplit
+)
+)
+)) datesplit
   where  a.医嘱id=b.id
   and a.药品id=d.药品id
   and a.病人id=e.病人id
   and a.主页id=e.主页id
   and a.对方部门id=f.id
   and b.id=c.医嘱id
+  and b.相关id = c2.医嘱id
   and  a.no=c.no
   and a.药品id = g.id
   and g.id = h.收费细目id(+)
   and a.药品id = i.药品id
   and h.性质(+) = 3
-  and datesplit.医嘱id = b.相关id and c.发送号 = datesplit.发送号
+  and datesplit.医嘱id = b.相关id and c2.发送号 = datesplit.发送号
   
   -- 长嘱
   and b.医嘱期效 = 0
@@ -231,27 +242,38 @@ select distinct i.规格, a.库房id, a.药品id, a.医嘱id, e.出院病床 as 床号, e.病人
   , RTRIM(to_char(b.单次用量/d.剂量系数,'fm990.99999'), '.') as 用量0, RTRIM(to_char(b.单次用量/d.剂量系数,'fm990.99999'), '.')||d.住院单位 as 用量,a.用法
   , c.首次时间 as 日期, b.执行频次, b.频率次数, b.首日数次, f.名称 as 科室, b.姓名||decode(b.婴儿,0,'','【婴】') as 姓名, a.年龄, e.住院号, b.医生嘱托, b.开始执行时间
   , datesplit.要求日期 as 护士实际一次发送哪几天
-  from 药品收发记录 a,病人医嘱记录 b ,药品规格 d,病案主页 e,部门表 f,病人医嘱发送 c, 收费项目目录 g, 收费项目别名 h, 药品目录 i
-  , (select distinct to_char(c.要求时间, 'yyyy-mm-dd') as 要求日期, c.医嘱id, e.发送号 from 医嘱执行时间 c
-  join (select a.相关id, b.发送号 from 病人医嘱记录 a
-  join 病人医嘱发送 b on a.id = b.医嘱id
-  where (b.no, b.医嘱id) in
- (select no, Order_Id from
+  from 药品收发记录 a,病人医嘱记录 b ,药品规格 d,病案主页 e,部门表 f,病人医嘱发送 c,病人医嘱发送 c2, 收费项目目录 g, 收费项目别名 h, 药品目录 i
+  , (select distinct to_char(yzzxsj.要求时间, 'yyyy-mm-dd') as 要求日期, yzzxsj.医嘱id, yzzxsj.发送号 
+from 医嘱执行时间 yzzxsj
+where (yzzxsj.医嘱id, yzzxsj.发送号) in (
+select a.id as 给药途径医嘱id, b.发送号 as 给药途径发送号 
+from 病人医嘱记录 a 
+join 病人医嘱发送 b on a.id = b.医嘱id
+where (a.id, b.发送时间) in (
+select 给药途径医嘱id, 药品发送时间 from 
+(
+select a.id as 药品医嘱id, a.相关id as 给药途径医嘱id, b.发送号 as 药品医嘱发送号, b.发送时间 as 药品发送时间 
+from 病人医嘱记录 a
+join 病人医嘱发送 b on a.id = b.医嘱id
+where (b.no, b.医嘱id) in  
+(select no, Order_Id from
   json_table({:CS},'$'columns (nested path '$[*]' columns(no varchar2(20) path '$.Rcp_No', pid number path '$.Pati_Id', Storehouse_Id number path '$.Storehouse_Id',Order_Id number path '$.Order_Id'))) )
-) e on c.医嘱id = e.相关id and c.发送号 = e.发送号
-  order by to_char(c.要求时间, 'yyyy-mm-dd')) datesplit
+)
+)
+)) datesplit
   where  a.医嘱id=b.id
   and a.药品id=d.药品id
   and a.病人id=e.病人id
   and a.主页id=e.主页id
   and a.对方部门id=f.id
   and b.id=c.医嘱id
+  and b.相关id = c2.医嘱id
   and  a.no=c.no
   and a.药品id = g.id
   and g.id = h.收费细目id(+)
   and a.药品id = i.药品id
   and h.性质(+) = 3
-  and datesplit.医嘱id = b.相关id and c.发送号 = datesplit.发送号
+  and datesplit.医嘱id = b.相关id and c2.发送号 = datesplit.发送号
   
   -- 长嘱
   and b.医嘱期效 = 0
